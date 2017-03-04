@@ -1,0 +1,360 @@
+軟體建構之道
+Code Complete 2nd Edition
+
+第四篇 陳述式
+Part IV Statements
+
+
+March 2017- Timothy Liu
+Tags: cc2e, software, develop
+
+
+# --------------------------------------------------
+
+* Agenda
+
+Chapter 14: Organizing Straight-Line Code . . . . . . . . . . . . . . . . . . . . . . . .347
+Chapter 15: Using Conditionals . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .355
+Chapter 16: Controlling Loops . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .367
+Chapter 17: Unusual Control Structures . . . . . . . . . . . . . . . . . . . . . . . . . . .391
+
+# --------------------------------------------------
+
+* Chapter 14 Organizing Straight-Line Code 組織直線碼
+
+# --------------------------------------------------
+
+* 14.1 Statements That Must Be in a Specific Order 
+必須依特定順序排列的陳述式
+
+# --------------------------------------------------
+
+- 相依性
+
+    // Java
+    data = ReadData();
+    results = CalculateResultsFromData( data );
+    PrintResults( results );
+
+
+- 相依性不明顯
+
+    // Java
+    revenue.ComputeMonthly();
+    revenue.ComputeQuarterly();
+    revenue.ComputeAnnual();
+
+# --------------------------------------------------
+
+* 
+- 相依性隱藏
+
+    ' VB
+    ComputeMarketingExpense
+    ComputeSalesExpense
+    ComputeTravelExpense
+    ComputePersonnelExpense
+    DisplayExpenseSummary
+
+# --------------------------------------------------
+
+* Some simple guidelines for ordering statements
+- Organize code so that dependencies are obvious
+
+    InitializeExpenseData   ' 組織程式碼好讓相依性明顯可見
+    ComputeMarketingExpense
+    ComputeSalesExpense
+    ComputeTravelExpense
+    ComputePersonnelExpense
+    DisplayExpenseSummary
+
+# --------------------------------------------------
+
+- Name routines so that dependencies are obvious
+
+    ComputeMarketingExpenseAndInitializeMemberData ' 命名常式讓相依性明顯可見
+    ComputeSalesExpense
+    ComputeTravelExpense
+    ComputePersonnelExpense
+    DisplayExpenseSummary
+
+# --------------------------------------------------
+
+* 
+- Use routine parameters to make dependencies obvious
+使用常式參數相依性明顯
+
+    expenseData = InitializeExpenseData( expenseData )
+    expenseData = ComputeMarketingExpense( expenseData )
+    expenseData = ComputeSalesExpense ( expenseData )
+    expenseData = ComputeTravelExpense( expenseData )
+    expenseData = ComputePersonnelExpense( expenseData )
+    expenseData = DisplayExpenseSummary( expenseData )
+
+- Document unclear dependencies with comments
+以註解說明不明顯的相依性
+
+    ' Compute expense data. Each of the routines accesses the
+    ' member data expenseData. DisplayExpenseSummary
+    ' should be called last because it depends on data calculated
+    ' by the other routines.
+    ...
+
+# --------------------------------------------------
+
+* 14.2 Statements Whose Order Doesn’t Matter
+順序不重要的陳述式
+
+    // C++ Example of Bad Code That Jumps Around
+    MarketingData marketingData;
+    SalesData salesData;
+    TravelData travelData;
+
+    travelData.ComputeQuarterly();
+    salesData.ComputeQuarterly();
+    marketingData.ComputeQuarterly();
+
+    salesData.ComputeAnnual();
+    marketingData.ComputeAnnual();
+    travelData.ComputeAnnual();
+
+    salesData.Print();
+    travelData.Print();
+    marketingData.Print();
+
+# --------------------------------------------------
+
+* Making code read from Top to Bottom
+
+    MarketingData marketingData;
+    marketingData.ComputeQuarterly();
+    marketingData.ComputeAnnual();
+    marketingData.Print();
+
+    SalesData salesData;
+    salesData.ComputeQuarterly();
+    salesData.ComputeAnnual();
+    salesData.Print();
+
+    TravelData travelData;
+    travelData.ComputeQuarterly();
+    travelData.ComputeAnnual();
+    travelData.Print();
+
+# --------------------------------------------------
+
+* Grouping Related Statements
+相關陳述式分組
+.image cc2e/Grouping_Related_Statements.png 327 721
+
+# --------------------------------------------------
+
+* Chapter 15: Using Conditionals
+
+# --------------------------------------------------
+
+* 15.1 if statements
+* Write the normal path through the code first; then write the unusual cases 
+首先撰寫過程式碼的名目路徑；然後再撰寫異常案例
+
+* Make sure that your branch correctly on equality
+務必慎用等號
+
+– Using > instead of >= or < instead of <=
+
+# --------------------------------------------------
+
+* Put the normal case after the if rather than after the else
+
+將正常的 case 置於 if 後方而非 else 後方而
+
+    OpenFile( inputFile, status )
+    If ( status = Status_Error ) Then
+        errorType = FileOpenError                               'Error case. 
+    Else
+        ReadFile( inputFile, fileData, status )                 'Nominal case. 
+        If ( status = Status_Success ) Then
+            SummarizeFileData( fileData, summaryData, status )  'Nominal case. 
+            If ( status = Status_Error ) Then
+                errorType = ErrorType_DataSummaryError          'Error case. 
+            Else
+                PrintSummary( summaryData )                     'Nominal case. 
+                SaveSummaryData( summaryData, status )
+                If ( status = Status_Error ) Then
+                    errorType = ErrorType_SummarySaveError      'Error case. 
+                Else
+                    UpdateAllAccounts()                         'Nominal case. 
+                EraseUndoFile()
+                    errorType = ErrorType_None
+                End If
+            End If
+        Else
+            errorType = ErrorType_FileReadError
+        End If
+    End If
+
+# --------------------------------------------------
+
+* 建議寫法
+
+    OpenFile( inputFile, status )
+    If ( status = Status_Success ) Then
+        ReadFile( inputFile, fileData, status )                     'Nominal case. 
+        If ( status = Status_Success ) Then
+            SummarizeFileData( fileData, summaryData, status )      'Nominal case. 
+            If ( status = Status_Success ) Then
+                PrintSummary( summaryData )                         'Nominal case. 
+                SaveSummaryData( summaryData, status )
+                If ( status = Status_Success ) Then
+                    UpdateAllAccounts()                             'Nominal case. 
+                    EraseUndoFile()
+                    errorType = ErrorType_None
+                Else
+                    errorType = ErrorType_SummarySaveError          'Error case. 
+                End If
+            Else
+                errorType = ErrorType_DataSummaryError              'Error case. 
+            End If
+        Else
+            errorType = ErrorType_FileReadError                     'Error case. 
+        End If
+    Else
+        errorType = ErrorType_FileOpenError                         'Error case. 
+    End If
+
+# --------------------------------------------------
+
+* Follow the if clause with a meaningful statement
+
+
+    if ( SomeTest )
+        ;
+    else {
+        // do something ...
+    }
+
+以有意義的陳述式跟隨 if 子句
+
+    if ( ! someTest )
+    {
+        // do something ...
+    }
+
+# --------------------------------------------------
+
+* Consider the else clause
+    // if color is valid
+    if ( COLOR_MIN <= color && color <= COLOR_MAX ) {
+        // do something ...
+    }
+    else {
+        // else color is invalid
+        // screen not written to --- safely ignore command
+    }
+– Test the else clause for correctness
+– Check for reversal of the if and else clauses
+
+# --------------------------------------------------
+
+* Chains of if-then-else Statements 鏈式結構
+- In languages that don’t support case or only partially
+
+    // C++
+    if ( inputCharacter < SPACE ) {
+        characterType = CharacterType_ControlCharacter;
+    } else if (
+        inputCharacter == ' ' || inputCharacter == ',' ||
+        inputCharacter == '.' || inputCharacter == '!' ||
+        inputCharacter == '(' || inputCharacter == ')' ||
+        inputCharacter == ':' || inputCharacter == ';' ||
+        inputCharacter == '?' || inputCharacter == '-'
+    ){
+        characterType = CharacterType_Punctuation;
+    } else if ( '0' <= inputCharacter && inputCharacter <= '9' ) {
+        characterType = CharacterType_Digit;
+    } else if (
+        ( 'a' <= inputCharacter && inputCharacter <= 'z' ) ||
+        ( 'A' <= inputCharacter && inputCharacter <= 'Z' ) ) {
+        characterType = CharacterType_Letter;
+    }
+
+# --------------------------------------------------
+
+* 
+- Simplify complicated tests with boolean function calls
+
+    if ( IsControl( inputCharacter ) ) {
+            characterType = CharacterType_ControlCharacter;
+    }
+    else if ( IsPunctuation( inputCharacter ) ) {
+            characterType = CharacterType_Punctuation;
+    }
+    else if ( IsDigit( inputCharacter ) ) {
+            characterType = CharacterType_Digit;
+    }
+    else if ( IsLetter( inputCharacter ) ) {
+    }
+
+# --------------------------------------------------
+
+* 
+- Put the most common cases first
+
+    if ( IsLetter( inputCharacter ) ) {
+            characterType = CharacterType_Letter;       // 先置入最常見的案例
+    }
+    else if ( IsPunctuation( inputCharacter ) ) {
+            characterType = CharacterType_Punctuation;
+    }
+    else if ( IsDigit( inputCharacter ) ) {
+            characterType = CharacterType_Digit;
+    }
+    else if ( IsControl( inputCharacter ) ) {           // 最不常見的測試移至最後
+    }
+
+# --------------------------------------------------
+
+* 
+- Make sure that all cases are covered
+
+    if ( IsLetter( inputCharacter ) ) {
+            characterType = CharacterType_Letter;
+    }
+    else if ( IsPunctuation( inputCharacter ) ) {
+            characterType = CharacterType_Punctuation;
+    }
+    else if ( IsDigit( inputCharacter ) ) {
+            characterType = CharacterType_Digit;
+    }
+    else if ( IsControl( inputCharacter ) ) {
+            characterType = CharacterType_ControlCharacter;
+    }
+    else {
+            DisplayInternalError( "Unexpected type of character detected." );
+    }
+
+# --------------------------------------------------
+
+* 15.2 case statements
+* Choosing the most effective ordering of cases
+– Order cases alphabetically or numerically
+* Equally important
+– Put the normal case first
+-- One normal case and several exceptions – Order cases by frequency
+-- Human readers can find the most common cases easily
+
+# --------------------------------------------------
+# --------------------------------------------------
+# --------------------------------------------------
+# --------------------------------------------------
+# --------------------------------------------------
+# --------------------------------------------------
+# --------------------------------------------------
+
+* Chapter 16: Controlling Loops
+
+# --------------------------------------------------
+
+* Chapter 17: Unusual Control Structures
+
+# --------------------------------------------------
