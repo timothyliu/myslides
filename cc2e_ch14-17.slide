@@ -4,9 +4,12 @@ Code Complete 2nd Edition
 第四篇 陳述式
 Part IV Statements
 
-
-March 2017- Timothy Liu
+March 2017 
 Tags: cc2e, software, develop
+
+Author Timothy Liu
+timothyliu@91app.com
+@Timothy585
 
 
 # --------------------------------------------------
@@ -335,24 +338,173 @@ Chapter 17: Unusual Control Structures . . . . . . . . . . . . . . . . . . . . .
 
 # --------------------------------------------------
 
+* How about golang?
+.play -edit -numbers ./cc2e/if-statement01.go /OMIT START/,/OMIT END/
+    
+# --------------------------------------------------
+
 * 15.2 case statements
-* Choosing the most effective ordering of cases
-– Order cases alphabetically or numerically
-* Equally important
-– Put the normal case first
--- One normal case and several exceptions – Order cases by frequency
--- Human readers can find the most common cases easily
+
+Choosing the most effective ordering of cases 
+選擇最有效的 case 排列順序
+
+*** Order cases alphabetically or numerically (如果都一樣重要)
+*** Put the normal case first (若有一個正常和多個例外案例)
+*** Order cases by frequency (Human readers can find the most common cases easily)
+
 
 # --------------------------------------------------
+
+* Case statement tips (1)
+
+*** Keep the actions of each case simple (保持案例的動作簡單)
+*** Don’t make up phony variables to be able to use the case statement (請勿為了能使用 case 陳述式而編造偽變數)
+
+    // Bad Practice
+    action = userCommand[ 0 ];
+    switch ( action ) {
+        case 'c':
+            Copy();
+            break;
+        case 'd':
+            DeleteCharacter();
+            break;
+        case 'f':
+            Format();
+            break;
+        case 'h':
+            Help();
+            break;
+            ...
+        default:
+            HandleUserInputError( ErrorType.InvalidUserCommand );
+    }
+
+輸入 copy, call, hello 可能和使用者期望不同
+
 # --------------------------------------------------
+
+* Case statement tips (2)
+
+    // Good Practice
+    if ( UserCommand.equals( COMMAND_STRING_COPY ) ) {
+        Copy();
+    }
+    else if ( UserCommand.equals( COMMAND_STRING_DELETE ) ) {
+        DeleteCharacter();
+    }
+    else if ( UserCommand.equals( COMMAND_STRING_FORMAT ) ) {
+        Format();
+    }
+    else if ( UserCommand.equals( COMMAND_STRING_HELP ) ) {
+        Help();
+    }
+    ...
+    else {
+        HandleUserInputError( ErrorType_InvalidCommandInput );
+    }
+    
 # --------------------------------------------------
+
+* How about golang?
+.play -edit ./cc2e/switch-statement01.go /OMIT START/,/OMIT END/
+    
 # --------------------------------------------------
+
+* Use the default clause only to detect legitimate defaults 
+僅使用預設子句偵測合法的預設值
+
+*不智的行為*
+
+* Use the default clause to detect errors
+使用預設子句偵測錯誤
+
+    switch ( commandShortcutLetter ) {
+        case 'a':
+            PrintAnnualReport();
+            break;
+            ...
+        default:
+            DisplayInternalError( "Internal Error 905: Call customer support." );
+    }
+
 # --------------------------------------------------
+
+* In C++ and Java, avoid dropping through the end of a case statement
+在 C++ 和 Java 中，請避免省略 case 陳述式的結尾
+
+    switch ( InputVar ) {
+        case 'A':   if ( test ) {
+                            // statement 1
+                            // statement 2
+        case 'B':           // statement 3
+                            // statement 4
+                        ...
+                    } 
+                ...
+            break; 
+        ...
+    }
+
 # --------------------------------------------------
+
+* In C++, clearly and unmistakably identify flow-throughs at the end of a case statement
+在 C++ 中，正確無誤地標示出 case 陳述式結尾的串流直通程序
+
+    class Main {    
+        public static void main(String[] args) {
+            String ResponseValue = "No or Yes";
+            switch(ResponseValue) {
+                default:
+                case "No":
+                    System.out.println("No");
+                case "Yes":
+                    System.out.println("Yes");
+            }            
+        }
+    }
+
+[[https://repl.it/GHgf/0][run it!]]
+[[https://repl.it/languages/java][Java playground]]
+
+* 這裏可以用 iframe
+.iframe https://repl.it/GHgf/0 600 1000
+
+# --------------------------------------------------
+
+* 建議寫法
+    switch ( errorDocumentationLevel ) {
+        case DocumentationLevel_Full:
+            DisplayErrorDetails( errorNumber );
+            // FALLTHROUGH -- Full documentation also prints summary comments
+        case DocumentationLevel_Summary:
+            DisplayErrorSummary( errorNumber );
+            // FALLTHROUGH -- Summary documentation also prints error number
+        case DocumentationLevel_NumberOnly:
+            DisplayErrorNumber( errorNumber );
+            break;
+        default:
+            DisplayInternalError( "Internal Error 905: Call customer support." );
+    }
+
+# --------------------------------------------------
+
+* How about golang?
+.play -edit ./cc2e/switch-statement02.go /OMIT START/,/OMIT END/
+    
 # --------------------------------------------------
 
 * Chapter 16: Controlling Loops
 
+# --------------------------------------------------
+
+* The Kinds of Loops
+
+.image cc2e/The_Kinds_of_Loops.png 
+
+# --------------------------------------------------
+# --------------------------------------------------
+# --------------------------------------------------
 # --------------------------------------------------
 
 * Chapter 17: Unusual Control Structures
