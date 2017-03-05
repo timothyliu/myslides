@@ -786,19 +786,46 @@ Use a while loop if you don’t know ahead of time exactly how many times you wa
 # --------------------------------------------------
 
 * Multiple Returns from a routine
-▪ Use a return when it enhances readability
-Comparison Compare( int value1, int value2 ) {
-   if ( value1 < value2 ) {
-      return Comparison_LessThan;
-   }
-   else if ( value1 > value2 ) {
-      return Comparison_GreaterThan;
-}
-   return Comparison_Equal;
-}
+
+- Use a return when it enhances readability
+
+    Comparison Compare( int value1, int value2 ) {
+        if ( value1 < value2 ) {
+            return Comparison_LessThan;
+        }
+        else if ( value1 > value2 ) {
+            return Comparison_GreaterThan;
+        }
+        return Comparison_Equal;
+    }
 
 # --------------------------------------------------
 
+* Multiple Returns from a routine
+
+- Use guard clauses (early return or exists) to simplify complex error processing
+
+    ' set up, bailing out if errors are found
+    If Not file.validName() Then
+        errorStatus = FileError_InvalidFileName
+        Exit Sub
+    End If
+    If Not file.Open() Then
+        errorStatus = FileError_CantOpenFile
+        Exit Sub
+    End If
+    If Not encryptionKey.valid() Then
+        errorStatus = FileError_InvalidEncryptionKey
+        Exit Sub
+    End If
+    If Not file.Decrypt( encryptionKey ) Then
+        errorStatus = FileError_CantDecryptFile
+        Exit Sub
+    End If
+    This is the code for the
+    nominal case.
+    ' lots of code
+    ...
 
 # --------------------------------------------------
 
@@ -812,9 +839,6 @@ Comparison Compare( int value1, int value2 ) {
     $> go install golang.org/x/tools/cmd/present
 
 - 執行 present 指令
-
-    Windows: $ cd "$HOME/Dropbox/Go/02. Go Present"
-    MacBook: > cd "%USERPROFILE%\Dropbox\Go\02. Go Present"
 
     $> present
 
