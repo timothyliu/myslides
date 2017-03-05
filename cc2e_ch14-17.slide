@@ -468,7 +468,7 @@ Choosing the most effective ordering of cases
 [[https://repl.it/languages/java][Java playground]]
 
 * 這裏可以用 iframe
-.iframe https://repl.it/GHgf/0 600 1000
+//.iframe https://repl.it/GHgf/0 600 1000
 
 # --------------------------------------------------
 
@@ -503,10 +503,320 @@ Choosing the most effective ordering of cases
 .image cc2e/The_Kinds_of_Loops.png 
 
 # --------------------------------------------------
+
+* When to use a while loop
+
+剛開始寫程式的程式設計師有時會誤以為 while 迴圈會不斷被評估，只要 while 的條件式不成立，就會立即終結。 
+
+Use a while loop if you don’t know ahead of time exactly how many times you want to loop 
+如果你事前不知道迴圈要重覆多少次，便應該使用 While 迴圈 
+
+- Loop with test at the beginning 前測式迴圈
+- Loop with test at the end 後測式迴圈
+- >> do-while in C++, C# and Java 
+- >> do-loop-while in VB
+
 # --------------------------------------------------
+
+* When to use a Loop-With-Exit loop
+- A loop in which the exit condition appears in the middle of the loop
+
+    // Compute scores and ratings. The code uses an infinite loop
+    // and a break statement to emulate a loop-with-exit loop.
+    score = 0;
+    while ( true ) {
+        GetNextRating( &ratingIncrement );
+        rating = rating + ratingIncrement;
+        if ( !( ( score < targetScore ) && ( ratingIncrement != 0 ) ) ) {
+            break;
+        }
+        GetNextScore( &scoreIncrement );
+        score = score + scoreIncrement;
+    }
+
+此結構更符合一般人對重複性控制方式的思考概念
+
 # --------------------------------------------------
+
+* Abnormal Loop-With-Exit loops
+
+下列易導致錯亂
+
+    goto Start;
+    while ( expression ) {
+        // do something
+        ...
+        Start:
+        // do something else
+        ... 
+    }
+
+在不使用 goto, C++ 另一種寫法
+
+    while ( true ) {
+        // do something else
+        ...
+        if ( !( expression ) ) {
+            break;
+        }
+        // do something
+        ...
+    }
+
+# --------------------------------------------------
+
+* When to use a for loop
+
+- A loop that executes a specified number of times (當你需要能執行一定次數的迴圈時的選擇)
+
+- Simple activities that don’t require internal loop controls
+
+- >> Simple increments or simple decrements
+
+- Use while loop instead if you have a condition that the execution has to jump out of a loop  (大部份複雜的迴圈工作由 while 來處理較好)
+
+- Don’t explicitly change the index value (勿直接修改索引值來強制迴圈結束)
+
+# --------------------------------------------------
+
+* Controlling the Loop
+- Minimize the number of factors that affect the loop 
+
+- Treat the inside of the loop as if it were a routine
+
+- Think of a loop as a black box
+
+.image cc2e/loop-black-box.png
+
+使用 while ( true )-break 會少掉此優勢
+ 
+# --------------------------------------------------
+
+* Entering the loop
+
+- Enter the loop from one location only (單一位置進入迴圈)
+
+- Put initialization code directly before the loop (初始化程式，置於迴圈前)
+
+- Use while(true) for infinite loops
+
+    for(;;)
+
+- Prefer for loops when they’re appropriate (盡可能使用 for 迴圈)
+
+- Don’t use a for loop when a while loop is more appropriate
+
+    // read all the records from a file
+    for ( inputFile.MoveToStart(), recordCount = 0; !inputFile.EndOfFile(); recordCount++ ) {
+        inputFile.GetRecord();
+    }
+
+將 while 迴圈硬塞到 For 迴圈標頭中的情況
+
+# --------------------------------------------------
+
+* Processing the Middle of the loop (1/2)
+
+- Use { and } to enclose the statements in the loop 
+
+- Avoid empty loops
+
+    // avoid
+    while ( ( inputChar = dataFile.GetChar() ) != CharType_Eof ) {
+        ;
+    }
+
+    // better
+    do {
+        inputChar = dataFile.GetChar();
+    } while ( inputChar != CharType_Eof );
+
+* Processing the Middle of the loop (2/2)
+
+- Keep loop-housekeeping chores at either the beginning or the end
+將迴圈內部管理雜務留在迴圈的開頭或結尾處
+
+    nameCount = 0;
+    totalLength = 0;
+    while ( !inputFile.EndOfFile() ) {
+        // do the work of the loop
+        inputFile >> inputString;
+        names[ nameCount ] = inputString;
+        ...
+        // prepare for next pass through the loop--housekeeping
+        nameCount++;
+        totalLength = totalLength + inputString.length();
+    }
+
+- Make each loop perform only one function
+讓各迴圈只執行一項功能
+
+# --------------------------------------------------
+
+* Exiting the loop (1/2)
+
+- Assure yourself that the loop ends (確定迴圈可以結束)
+
+- Make loop-termination conditions obvious (闡明讓迴圈終結的條件式)
+
+- Don’t monkey with the look index!
+
+    for ( int i = 0; i < 100; i++ ) {
+        // some code
+        ...
+        if ( ... ) {
+            i = 100;    // 外行做法
+        }
+        // more code
+        ... 
+    }
+
+# --------------------------------------------------
+
+* Exiting the loop (2/2)
+
+- Avoid code that depends on the loop index’s final value (別依賴迴圈索引的最終數值)
+
+    // 較好的作法
+    found = false;
+    for ( recordCount = 0; recordCount < MAX_RECORDS; recordCount++ ) {
+        if ( entry[ recordCount ] == testValue ) {
+            found = true;
+            break;
+        }
+    }
+    ...
+    return( found );
+
+- Consider using safety counter
+
+    safetyCounter++;
+    if ( safetyCounter >= SAFETY_LIMIT ) {
+        Assert( false, "Internal Error: Safety-Counter Violation." );
+    }
+
+# --------------------------------------------------
+
+* Exiting loops early
+
+- Consider using break statements rather than boolean flags in a while loop
+
+- Be wary of a loop with a lot of breaks scattered through it
+
+- Use continue for tests at the top of a loop
+
+- Use the labeled break structure if your language supports it
+
+    do { ...
+    switch ...
+            CALL_CENTER_DOWN:
+    if () { ...
+                break CALL_CENTER_DOWN;
+    ... }
+            ...
+    } while ( ... );
+
+- Use break and continue only with caution
+
+# --------------------------------------------------
+
+* Using loop variables
+
+- Use ordinal or enumerated types for limits on both arrays and loops 
+
+- Use meaningful variables names to make nested loops readable
+
+    for ( int payCodeIdx = 0; payCodeIdx < numPayCodes; payCodeIdx++ ) {
+        for (int month = 0; month < 12; month++ ) {
+            for ( int divisionIdx = 0; divisionIdx < numDivisions; divisionIdx++ ) {
+                sum = sum + transaction[ month ][ payCodeIdx ][ divisionIdx ];
+            }
+        }
+    }
+
+# --------------------------------------------------
+
+* Using loop variables
+
+- Use meaningful names to avoid loop-index cross-talk
+
+    for ( i = 0; i < numPayCodes; i++ ) {
+        // lots of code
+        ...
+        for ( j = 0; j < 12; j++ ) {
+            // lots of code
+            ...
+            for ( i = 0; i < numDivisions; i++ ) {
+                sum = sum + transaction[ j ][ i ][ k ];
+            }
+        } 
+    }
+
+- Limit the scope of loop-index variables to the loop itself
+
+    for ( int recordCount = 0; recordCount < MAX_RECORDS; recordCount++ ) {
+        // looping code that uses recordCount
+    }
+    // intervening code
+    for ( int recordCount = 0; recordCount < MAX_RECORDS; recordCount++ ) {
+        // additional looping code that uses a different recordCount
+    }
+
+# --------------------------------------------------
+
+* How Long should a loop be?
+
+- Make your loops short enough to view all at once 
+
+- Limit nesting to three levels
+
+- >> Move loop innards of long loops into routines (將長型迴圈的內容移動到常式中)
+
+- Make long loops especially clear (注意保持長型迴圈的透明度)
+
+# --------------------------------------------------
+
+* golang 只有 for 一種，但幾乎通吃
+.play -edit ./cc2e/loop-statement01.go /OMIT START/,/OMIT END/
+
 # --------------------------------------------------
 
 * Chapter 17: Unusual Control Structures
 
+# --------------------------------------------------
+
+* Multiple Returns from a routine
+▪ Use a return when it enhances readability
+Comparison Compare( int value1, int value2 ) {
+   if ( value1 < value2 ) {
+      return Comparison_LessThan;
+   }
+   else if ( value1 > value2 ) {
+      return Comparison_GreaterThan;
+}
+   return Comparison_Equal;
+}
+
+# --------------------------------------------------
+
+
+# --------------------------------------------------
+
+
+# --------------------------------------------------
+* reference
+- [[https://github.com/JosephBuchma/Go-Present-code-highlighter][Chrome extension for supporting go present code syntax color]]
+- 安裝 go present
+
+    $> go get -u -v golang.org/x/tools/cmd/present
+    $> go install golang.org/x/tools/cmd/present
+
+- 執行 present 指令
+
+    Windows: $ cd "$HOME/Dropbox/Go/02. Go Present"
+    MacBook: > cd "%USERPROFILE%\Dropbox\Go\02. Go Present"
+
+    $> present
+
+- 至瀏覽器【[[http://127.0.0.1:3999][http://127.0.0.1:3999]]】點選【xxx.slide】進行投影片投放
 # --------------------------------------------------
