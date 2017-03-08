@@ -829,8 +829,50 @@ Use a while loop if you don’t know ahead of time exactly how many times you wa
 
 # --------------------------------------------------
 
+* Recursion
+- A routine solves a small part of a problem itself, divides the problem into smaller pieces, and then calls itself to solve each of the smaller pieces
+常式可解決問題本身的一小部份，將該問題分解成數個更小塊的問題，然後呼叫自已解決每個分解出來的小問題。
+ 
+    void QuickSort( int firstIndex, int lastIndex, String [] names ) {
+        if ( lastIndex > firstIndex ) {
+            int midPoint = Partition( firstIndex, lastIndex, names );
+            QuickSort( firstIndex, midPoint-1, names );
+            QuickSort( midPoint+1, lastIndex, names )
+        } 
+    }
+
+[[http://www.ruanyifeng.com/blog/2011/04/quicksort_in_javascript.html][js]]
+[[https://swizec.com/blog/are-map-reduce-and-filter-turing-complete/swizec/6341][js+mapreduce]]
 
 # --------------------------------------------------
+
+* Recursion Tips
+- Make sure the recursion stops
+– >> AlreadyTried(), ThisIsThe Exit()
+- Make safety counters to prevent infinite recursion
+    Public Sub RecursiveProc( ByRef safetyCounter As Integer )
+        If ( safetyCounter > SAFETY_LIMIT ) Then
+            Exit Sub
+        End If
+        safetyCounter = safetyCounter + 1
+        ...
+        RecursiveProc( safetyCounter )
+    End Sub
+
+- Limit recursion to one routine
+- Keep an eye on the stack
+- Don’t use recursion for factorials or Fibonacci numbers
+
+# --------------------------------------------------
+
+* goto
+
+別用，降低可讀性，可能也沒得用 (java)
+
+golang 1.6 出現 1000+， 在性能優先的場合，能發揮積極作用。
+
+# --------------------------------------------------
+
 * reference
 - [[https://github.com/JosephBuchma/Go-Present-code-highlighter][Chrome extension for supporting go present code syntax color]]
 - 安裝 go present
