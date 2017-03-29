@@ -848,8 +848,9 @@ Use a while loop if you don’t know ahead of time exactly how many times you wa
 
 * Recursion Tips
 - Make sure the recursion stops
-– >> AlreadyTried(), ThisIsThe Exit()
+– >> AlreadyTried(), ThisIsTheExit()
 - Make safety counters to prevent infinite recursion
+
     Public Sub RecursiveProc( ByRef safetyCounter As Integer )
         If ( safetyCounter > SAFETY_LIMIT ) Then
             Exit Sub
